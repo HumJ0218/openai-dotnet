@@ -1,27 +1,27 @@
-# Guide for migrating to OpenAI 2.0.0-beta.1 or higher from OpenAI 1.11.0
+# 从 OpenAI 1.11.0 迁移到 OpenAI 2.0.0-beta.1 或更高版本的指南
 
-This guide is intended to assist in the migration to the official OpenAI library (2.0.0-beta.1 or higher) from [OpenAI 1.11.0][openai_1110], focusing on side-by-side comparisons for similar operations between libraries. Version 2.0.0-beta.1 will be used for comparison with 1.11.0 but this guide can still be safely used when migrating to higher versions.
+本指南旨在帮助将官方 OpenAI 库（2.0.0-beta.1 或更高版本）迁移自 [OpenAI 1.11.0][openai_1110] ，重点是库之间相似操作的并排比较。将使用版本 2.0.0-beta.1 与 1.11.0 进行比较，但在迁移到更高版本时，本指南仍然可以安全使用。
 
-Prior to 2.0.0-beta.1, the OpenAI package was a community library not officially supported by OpenAI. See the [CHANGELOG][changelog] for more details.
+在 2.0.0-beta.1 之前，OpenAI 包是一个社区库，不受 OpenAI 官方支持。有关更多详细信息，请参见 [CHANGELOG][changelog]。
 
-Familiarity with the OpenAI 1.11.0 package is assumed. For those new to any OpenAI library for .NET, see the [README][readme] rather than this guide.
+假定您熟悉 OpenAI 1.11.0 包。对于首次使用任何 OpenAI .NET 库的用户，请参阅 [README][readme] 而不是本指南。
 
-## Table of contents
-- [Client usage](#client-usage)
-- [Authentication](#authentication)
-- [Highlighted scenarios](#highlighted-scenarios)
-    - [Chat Completions: Text generation](#chat-completions-text-generation)
-    - [Chat Completions: Streaming](#chat-completions-streaming)
-    - [Chat Completions: JSON mode](#chat-completions-json-mode)
-    - [Chat Completions: Vision](#chat-completions-vision)
-    - [Audio: Speech-to-text](#audio-speech-to-text)
-    - [Audio: Text-to-speech](#audio-text-to-speech)
-    - [Image: Image generation](#image-image-generation)
-- [Additional examples](#additional-examples)
+## 目录
+- [客户端使用](#client-usage)
+- [身份验证](#authentication)
+- [突出显示的场景](#highlighted-scenarios)
+    - [聊天完成：文本生成](#chat-completions-text-generation)
+    - [聊天完成：流式传输](#chat-completions-streaming)
+    - [聊天完成：JSON 模式](#chat-completions-json-mode)
+    - [聊天完成：视觉](#chat-completions-vision)
+    - [音频：语音转文本](#audio-speech-to-text)
+    - [音频：文本转语音](#audio-text-to-speech)
+    - [图像：图像生成](#image-image-generation)
+- [其他示例](#additional-examples)
 
-## Client usage
+## 客户端使用
 
-The client usage has considerably changed between libraries. While the OpenAI 1.11.0 had a single client, `OpenAIAPI`, from which multiple APIs could be accessed, OpenAI 2.0.0-beta.1 keeps a separate client per API. The following snippets illustrate this difference when invoking the image generation capability from the Image API:
+不同库之间的客户端使用发生了显著变化。虽然 OpenAI 1.11.0 有一个单一的客户端 `OpenAIAPI`，可以访问多个 API，但 OpenAI 2.0.0-beta.1 为每个 API 保持了单独的客户端。以下代码片段说明了从图像 API 调用图像生成能力时的区别：
 
 OpenAI 1.11.0:
 ```cs
@@ -35,64 +35,64 @@ ImageClient client = new ImageClient("dall-e-3", "<api-key>");
 ClientResult<GeneratedImage> result = await client.GenerateImageAsync("Draw a quick brown fox jumping over a lazy dog.");
 ```
 
-Another major difference highlighted in the snippets above is that OpenAI 2.0.0-beta.1 requires the model to be explicitly set during client instantiation, while the `OpenAIAPI` client allows a model to be specified per call.
+另一个在上述代码片段中突出的重大区别是，OpenAI 2.0.0-beta.1 需要在客户端实例化时显式设置模型，而 `OpenAIAPI` 客户端允许在每次调用时指定模型。
 
-The table below illustrates to which client each endpoint of `OpenAIAPI` was ported. Note that the deprecated Completions API is not supported in 2.0.0-beta.1:
+下表展示了 `OpenAIAPI` 的每个端点被移植到哪个客户端。请注意，已弃用的 Completions API 在 2.0.0-beta.1 中不再支持：
 
-Old library's endpoint|New library's client
+旧库的端点 | 新库的客户端
 |-|-
-|Chat | ChatClient
-|ImageGenerations | ImageClient
-|TextToSpeech | AudioClient
-|Transcriptions | AudioClient
-|Translations | AudioClient
-|Moderation | ModerationClient
-|Embeddings | EmbeddingClient
-|Files | OpenAIFileClient
-|Models | OpenAIModelClient
-|Completions | Not supported
+|聊天 | ChatClient
+|图像生成 | ImageClient
+|文本转语音 | AudioClient
+|转录 | AudioClient
+|翻译 | AudioClient
+|审核 | ModerationClient
+|嵌入 | EmbeddingClient
+|文件 | OpenAIFileClient
+|模型 | OpenAIModelClient
+|完成功能 | 不支持
 
-## Authentication
+## 身份验证
 
-To authenticate to OpenAI, you must set an API key when creating a client.
+要进行 OpenAI 身份验证，您必须在创建客户端时设置 API 密钥。
 
-OpenAI 1.11.0 allowed setting the API key in 3 different ways:
-- Directly from a string
-- From an environment variable
-- From a configuration file
+OpenAI 1.11.0 支持通过三种不同方式设置 API 密钥：
+- 直接从字符串
+- 从环境变量
+- 从配置文件
 
 ```cs
 OpenAIAPI api;
 
-// Sets the API key directly from a string.
+// 直接从字符串设置 API 密钥。
 api = new OpenAIAPI("<api-key>");
 
-// Attempts to load the API key from environment variables OPENAI_KEY and OPENAI_API_KEY.
+// 尝试从环境变量 OPENAI_KEY 和 OPENAI_API_KEY 加载 API 密钥。
 api = new OpenAIAPI(APIAuthentication.LoadFromEnv());
 
-// Attempts to load the API key from a configuration file.
+// 尝试从配置文件加载 API 密钥。
 api = new OpenAIAPI(APIAuthentication.LoadFromPath("<directory>", "<filename>"));
 ```
 
-OpenAI 2.0.0-beta.1 only supports setting it from a string or from an environment variable. The following snippet illustrates the behavior with the `ChatClient`, but other clients behave the same:
+OpenAI 2.0.0-beta.1 仅支持从字符串或环境变量设置。以下代码片段说明了 `ChatClient` 的行为，但其他客户端的行为相同：
 
 ```cs
 ChatClient client;
 
-// Sets the API key directly from a string.
+// 直接从字符串设置 API 密钥。
 client = new ChatClient("gpt-3.5-turbo", "<api-key>");
 
-// When no API key string is specified, attempts to load the API key from the environment variable OPENAI_API_KEY.
+// 如果未指定 API 密钥字符串，则尝试从环境变量 OPENAI_API_KEY 加载 API 密钥。
 client = new ChatClient("gpt-3.5-turbo");
 ```
 
-Note that, unlike the OpenAI 1.11.0, OpenAI 2.0.0-beta.1 will never attempt to load the API key from the `OPENAI_KEY` environment variable. Only `OPENAI_API_KEY` is supported.
+请注意，与 OpenAI 1.11.0 不同的是，OpenAI 2.0.0-beta.1 将永远不会尝试从 `OPENAI_KEY` 环境变量加载 API 密钥。仅支持 `OPENAI_API_KEY`。
 
-## Highlighted scenarios
+## 突出显示的场景
 
-The following sections illustrate side-by-side comparisons for similar operations between the two libraries, highlighting common scenarios.
+以下部分展示了两个库之间相似操作的并排比较，突出常见场景。
 
-### Chat Completions: Text generation
+### 聊天完成：文本生成
 
 OpenAI 1.11.0:
 ```cs
@@ -142,7 +142,7 @@ foreach (ChatMessage message in messages)
 }
 ```
 
-### Chat Completions: Streaming
+### 聊天完成：流式传输
 
 OpenAI 1.11.0:
 ```cs
@@ -175,7 +175,7 @@ await foreach (StreamingChatCompletionUpdate chatUpdate in client.CompleteChatSt
 }
 ```
 
-### Chat Completions: JSON mode
+### 聊天完成：JSON 模式
 
 OpenAI 1.11.0:
 ```cs
@@ -215,7 +215,7 @@ string text = result.Value.Content[0].Text;
 Console.WriteLine(text);
 ```
 
-### Chat Completions: Vision
+### 聊天完成：视觉
 
 OpenAI 1.11.0:
 ```cs
@@ -249,7 +249,7 @@ string text = result.Value.Content[0].Text;
 Console.WriteLine(text);
 ```
 
-### Audio: Speech-to-text
+### 音频：语音转文本
 
 OpenAI 1.11.0:
 ```cs
@@ -273,7 +273,7 @@ string text = result.Value.Text;
 Console.WriteLine(text);
 ```
 
-### Audio: Text-to-speech
+### 音频：文本转语音
 
 OpenAI 1.11.0:
 ```cs
@@ -298,7 +298,7 @@ BinaryData data = result.Value;
 await File.WriteAllBytesAsync("<file-path>", data.ToArray());
 ```
 
-### Image: Image generation
+### 图像：图像生成
 
 OpenAI 1.11.0:
 ```cs
@@ -331,9 +331,9 @@ Uri imageUri = result.Value.ImageUri;
 Console.WriteLine(imageUri.AbsoluteUri);
 ```
 
-## Additional examples
+## 其他示例
 
-For additional examples, see [OpenAI Examples][examples].
+有关其他示例，请参见 [OpenAI 示例][examples]。
 
 [readme]: https://github.com/openai/openai-dotnet/blob/main/README.md
 [changelog]: https://github.com/openai/openai-dotnet/blob/main/CHANGELOG.md
