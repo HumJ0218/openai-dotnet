@@ -1,30 +1,28 @@
-## Observability with OpenTelemetry
+## 使用 OpenTelemetry 的可观察性
 
-> Note:
-> OpenAI .NET SDK instrumentation is in development and is not complete. See [Available sources and meters](#available-sources-and-meters) section for the list of covered operations.
+> 注意：
+> OpenAI .NET SDK 的仪器化仍在开发中，尚未完成。请参阅 [可用源和测量](#available-sources-and-meters) 部分获取涵盖的操作列表。
 
-OpenAI .NET library is instrumented with distributed tracing and metrics using .NET [tracing](https://learn.microsoft.com/dotnet/core/diagnostics/distributed-tracing)
-and [metrics](https://learn.microsoft.com/dotnet/core/diagnostics/metrics-instrumentation) API and supports [OpenTelemetry](https://learn.microsoft.com/dotnet/core/diagnostics/observability-with-otel).
+OpenAI .NET 库使用 .NET [跟踪](https://learn.microsoft.com/dotnet/core/diagnostics/distributed-tracing) 和 [度量](https://learn.microsoft.com/dotnet/core/diagnostics/metrics-instrumentation) API 进行分布式跟踪和指标仪器化，并支持 [OpenTelemetry](https://learn.microsoft.com/dotnet/core/diagnostics/observability-with-otel)。
 
-OpenAI .NET instrumentation follows [OpenTelemetry Semantic Conventions for Generative AI systems](https://github.com/open-telemetry/semantic-conventions/tree/main/docs/gen-ai).
+OpenAI .NET 仪器化遵循 [生成 AI 系统的 OpenTelemetry 语义约定](https://github.com/open-telemetry/semantic-conventions/tree/main/docs/gen-ai)。
 
-### How to enable
+### 如何启用
 
-The instrumentation is **experimental** - volume and semantics of the telemetry items may change.
+该仪器化是 **实验性的** - 监测项目的数量和语义可能会有所变化。
 
-To enable the instrumentation:
+要启用仪器化：
 
-1. Set instrumentation feature-flag using one of the following options:
+1. 使用以下选项之一设置仪器化特性标志：
 
-   - set the `OPENAI_EXPERIMENTAL_ENABLE_OPEN_TELEMETRY` environment variable to `"true"`
-   - set the `OpenAI.Experimental.EnableOpenTelemetry` context switch to true in your application code when application
-     is starting and before initializing any OpenAI clients. For example:
+   - 将 `OPENAI_EXPERIMENTAL_ENABLE_OPEN_TELEMETRY` 环境变量设置为 `"true"`
+   - 在应用程序启动并初始化任何 OpenAI 客户端之前，在您的应用程序代码中将 `OpenAI.Experimental.EnableOpenTelemetry` 上下文开关设置为 true。例如：
 
      ```csharp
      AppContext.SetSwitch("OpenAI.Experimental.EnableOpenTelemetry", true);
      ```
 
-2. Enable OpenAI telemetry:
+2. 启用 OpenAI 监测：
 
    ```csharp
    builder.Services.AddOpenTelemetry()
@@ -42,16 +40,15 @@ To enable the instrumentation:
        });
    ```
 
-   Distributed tracing is enabled with `AddSource("OpenAI.*")` which tells OpenTelemetry to listen to all [ActivitySources](https://learn.microsoft.com/dotnet/api/system.diagnostics.activitysource) with names starting with `OpenAI.*`.
+   分布式跟踪通过 `AddSource("OpenAI.*")` 启用，这告诉 OpenTelemetry 监听所有名称以 `OpenAI.*` 开头的 [ActivitySources](https://learn.microsoft.com/dotnet/api/system.diagnostics.activitysource)。
 
-   Similarly, metrics are configured with `AddMeter("OpenAI.*")` which enables all OpenAI-related [Meters](https://learn.microsoft.com/dotnet/api/system.diagnostics.metrics.meter).
+   同样，度量通过 `AddMeter("OpenAI.*")` 配置，启用所有与 OpenAI 相关的 [Meters](https://learn.microsoft.com/dotnet/api/system.diagnostics.metrics.meter)。
 
-Consider enabling [HTTP client instrumentation](https://www.nuget.org/packages/OpenTelemetry.Instrumentation.Http) to see all HTTP client
-calls made by your application including those done by the OpenAI SDK.
-Check out [OpenTelemetry documentation](https://opentelemetry.io/docs/languages/net/getting-started/) for more details.
+请考虑启用 [HTTP 客户端仪器化](https://www.nuget.org/packages/OpenTelemetry.Instrumentation.Http)，以查看您的应用程序所做的所有 HTTP 客户端调用，包括 OpenAI SDK 的调用。
+有关更多详细信息，请查看 [OpenTelemetry 文档](https://opentelemetry.io/docs/languages/net/getting-started/)。
 
-### Available sources and meters
+### 可用源和测量
 
-The following sources and meters are available:
+可用的源和测量如下：
 
-- `OpenAI.ChatClient` - records traces and metrics for `ChatClient` operations (except streaming and protocol methods which are not instrumented yet)
+- `OpenAI.ChatClient` - 记录 `ChatClient` 操作的跟踪和指标（不包括流和协议方法，这些方法尚未仪器化）
